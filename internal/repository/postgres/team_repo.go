@@ -213,3 +213,71 @@ func (repo *TeamRepository) GetTeam(ctx context.Context, teamName string) (*doma
 		Members:  members,
 	}, nil
 }
+
+func (repo *TeamRepository) GetTeamsMembersByTeamName(ctx context.Context, teamName string) ([]domain.Member, error) {
+	const qSelectTeamID = `
+        SELECT id
+        FROM users.teams
+        WHERE name = $1
+    `
+
+	var teamID int64
+	err := repo.pool.QueryRow(ctx, qSelectTeamID, teamName).Scan(&teamID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrTeamNotFound
+		}
+		return nil, err
+	}
+
+	const qSelectMembers = `
+        SELECT 
+            u.id,
+            u.name,
+            u.is_active,
+            (
+                SELECT COUNT(*)
+                FROM prs.pr_reviewers pra
+                WHERE pra.user_id = u.id
+            ) AS pr_reviews
+        FROM users.team_members tm
+        JOIN users.users u ON u.id = tm.user_id
+        WHERE tm.team_id = $1
+        ORDER BY u.name;
+    `
+
+	rows, err := repo.pool.Query(ctx, qSelectMembers, teamID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var members []domain.Member
+
+	for rows.Next() {
+		var (
+			id        string
+			username  string
+			isActive  bool
+			prReviews int64
+		)
+
+		if err := rows.Scan(&id, &username, &isActive, &prReviews); err != nil {
+			return nil, err
+		}
+
+		prPtr := prReviews
+		members = append(members, domain.Member{
+			UserID:    id,
+			Username:  username,
+			IsActive:  isActive,
+			PRReviews: &prPtr,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return members, nil
+}

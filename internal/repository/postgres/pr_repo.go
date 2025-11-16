@@ -50,3 +50,56 @@ func (repo *PullRequestRepository) GetReviewPRs(ctx context.Context, userID stri
 
 	return prs, nil
 }
+
+func (repo *PullRequestRepository) Create(ctx context.Context, prID, prName, authorID string) error {
+	tx, err := repo.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback(ctx)
+		} else if err != nil {
+			_ = tx.Rollback(ctx)
+		}
+		err = tx.Commit(ctx)
+	}()
+
+	const qCreatePR = `INSERT INTO prs.pull_requests(id, title, author_id) VALUES ($1, $2, $3)`
+
+	_, err = tx.Exec(ctx, qCreatePR, prID, prName, authorID)
+
+	if err != nil {
+		return domain.ErrPRIsExists
+	}
+
+	return nil
+}
+
+func (repo *PullRequestRepository) AssignReviewers(ctx context.Context, prID string, reviewers []string) error {
+	tx, err := repo.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback(ctx)
+		} else if err != nil {
+			_ = tx.Rollback(ctx)
+		}
+		err = tx.Commit(ctx)
+	}()
+
+	const qInsertReviewer = `
+		INSERT INTO prs.pr_reviewers (pr_id, user_id)
+		VALUES ($1, $2)
+	`
+	for _, reviewerID := range reviewers {
+		if _, err = tx.Exec(ctx, qInsertReviewer, prID, reviewerID); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

@@ -1,5 +1,9 @@
 package domain
 
+import "errors"
+
+var ErrPRIsExists = errors.New("PR id already exists")
+
 type PRStatus string
 
 const (
@@ -12,4 +16,9 @@ type PullRequest struct {
 	PullRequestName string
 	AuthorID        string
 	Status          PRStatus
+}
+
+type PullRequestAssignment struct {
+	PullRequest
+	AssignedReviewers []string
 }

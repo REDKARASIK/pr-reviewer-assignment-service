@@ -15,6 +15,63 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/pullRequest/create": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PullRequests"
+                ],
+                "summary": "Создать PR и автоматически назначить до 2 ревьюверов из команды автора",
+                "parameters": [
+                    {
+                        "description": "Параметры для создания PR",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pull_requests.CreatePRRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Созданный PR с назначенными ревьюверами",
+                        "schema": {
+                            "$ref": "#/definitions/pull_requests.CreatePRResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "INVALID_JSON",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "NOT_FOUND (author or team not found)",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "PR_EXISTS",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/team/add": {
             "post": {
                 "consumes": [
@@ -208,6 +265,54 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "pull_requests.CreatePRRequest": {
+            "type": "object",
+            "properties": {
+                "author_id": {
+                    "type": "string"
+                },
+                "pull_request_id": {
+                    "type": "string"
+                },
+                "pull_request_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "pull_requests.CreatePRResponse": {
+            "type": "object",
+            "properties": {
+                "pr": {
+                    "$ref": "#/definitions/pull_requests.PullRequestResponse"
+                }
+            }
+        },
+        "pull_requests.PullRequestResponse": {
+            "type": "object",
+            "properties": {
+                "assigned_reviewers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "author_id": {
+                    "type": "string"
+                },
+                "mergedAt": {
+                    "type": "string"
+                },
+                "pull_request_id": {
+                    "type": "string"
+                },
+                "pull_request_name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "response.ErrBodyResponse": {
             "type": "object",
             "properties": {

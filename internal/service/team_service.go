@@ -10,6 +10,7 @@ type TeamRepository interface {
 	IsTeamExists(ctx context.Context, teamName string) (bool, error)
 	UpdateTeamMembers(ctx context.Context, team *domain.Team) error
 	GetTeam(ctx context.Context, teamName string) (*domain.Team, error)
+	GetTeamsMembersByTeamName(ctx context.Context, teamName string) ([]domain.Member, error)
 }
 
 type TeamService struct {

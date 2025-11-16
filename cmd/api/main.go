@@ -31,6 +31,7 @@ func main() {
 		Router:      app.Router,
 		UserHandler: app.UserHandler,
 		TeamHandler: app.TeamHandler,
+		PrHandler:   app.PRHandler,
 	})
 
 	log.Println("Starting server on :8080")

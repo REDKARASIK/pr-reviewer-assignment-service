@@ -7,9 +7,10 @@ var ErrTeamAlreadyExists = errors.New("team_name already exists")
 var ErrUserNotFoundInTeam = errors.New("user not found in team")
 
 type Member struct {
-	UserID   string
-	Username string
-	IsActive bool
+	UserID    string
+	Username  string
+	IsActive  bool
+	PRReviews *int64
 }
 
 type Team struct {

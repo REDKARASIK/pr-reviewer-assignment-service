@@ -1,4 +1,35 @@
 definitions:
+  pull_requests.CreatePRRequest:
+    properties:
+      author_id:
+        type: string
+      pull_request_id:
+        type: string
+      pull_request_name:
+        type: string
+    type: object
+  pull_requests.CreatePRResponse:
+    properties:
+      pr:
+        $ref: '#/definitions/pull_requests.PullRequestResponse'
+    type: object
+  pull_requests.PullRequestResponse:
+    properties:
+      assigned_reviewers:
+        items:
+          type: string
+        type: array
+      author_id:
+        type: string
+      mergedAt:
+        type: string
+      pull_request_id:
+        type: string
+      pull_request_name:
+        type: string
+      status:
+        type: string
+    type: object
   response.ErrBodyResponse:
     properties:
       code:
@@ -89,6 +120,43 @@ definitions:
 info:
   contact: {}
 paths:
+  /pullRequest/create:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Параметры для создания PR
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/pull_requests.CreatePRRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Созданный PR с назначенными ревьюверами
+          schema:
+            $ref: '#/definitions/pull_requests.CreatePRResponse'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: NOT_FOUND (author or team not found)
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: PR_EXISTS
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Создать PR и автоматически назначить до 2 ревьюверов из команды автора
+      tags:
+      - PullRequests
   /team/add:
     post:
       consumes:
