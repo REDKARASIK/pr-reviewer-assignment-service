@@ -10,6 +10,7 @@ type PullRequestRepository interface {
 	GetReviewPRs(ctx context.Context, userID string) ([]domain.PullRequest, error)
 	Create(ctx context.Context, prID, prName, authorID string) error
 	AssignReviewers(ctx context.Context, prID string, reviewers []string) error
+	Merge(ctx context.Context, prID string) (*domain.PullRequestAssignment, error)
 }
 
 type PullRequestService struct {
@@ -82,4 +83,13 @@ func (service *PullRequestService) Create(ctx context.Context, prID, prName, aut
 	prAssignments.Status = domain.PROpenStatus
 
 	return &prAssignments, nil
+}
+
+func (service *PullRequestService) Merge(ctx context.Context, prID string) (*domain.PullRequestAssignment, error) {
+	prAssignments, err := service.repo.Merge(ctx, prID)
+	if err != nil {
+		return nil, err
+	}
+
+	return prAssignments, nil
 }

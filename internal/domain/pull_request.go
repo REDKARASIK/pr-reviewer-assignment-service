@@ -1,8 +1,12 @@
 package domain
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 var ErrPRIsExists = errors.New("PR id already exists")
+var ErrPRNotFound = errors.New("PR not found")
 
 type PRStatus string
 
@@ -21,4 +25,5 @@ type PullRequest struct {
 type PullRequestAssignment struct {
 	PullRequest
 	AssignedReviewers []string
+	MergedAt          *time.Time
 }

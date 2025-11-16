@@ -72,3 +72,56 @@ func (handler *PullRequestHandler) Create(w http.ResponseWriter, r *http.Request
 
 	response.JSON(w, http.StatusCreated, prResponse)
 }
+
+// Merge godoc
+// @Summary Пометить PR как MERGED (идемпотентная операция)
+// @Description
+//
+//	Завершает pull request и помечает его как MERGED.
+//	Если PR уже в статусе MERGED — операция идемпотентна:
+//	ничего не изменяется, и возвращаются текущие данные PR.
+//	Если PR не существует — возвращается ошибка.
+//
+// @Tags PullRequests
+// @Accept json
+// @Produce json
+// @Param request body MergePRRequest true "Идентификатор PR для merge"
+// @Success 200 {object} MergePRResponse "PR успешно помечен как MERGED"
+// @Failure 400 {object} response.ErrorResponse "INVALID_JSON"
+// @Failure 404 {object} response.ErrorResponse "NOT_FOUND"
+// @Failure 500 {object} response.ErrorResponse "INTERNAL_ERROR"
+// @Router /pullRequest/merge [post]
+func (handler *PullRequestHandler) Merge(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	w.Header().Set("Content-Type", "application/json")
+
+	var request MergePRRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		response.Error(w, http.StatusBadRequest, "INVALID_JSON", "invalid request body")
+		return
+	}
+
+	prMergeInfo, err := handler.prService.Merge(r.Context(), request.PullRequestID)
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrPRNotFound):
+			response.Error(w, http.StatusNotFound, "NOT_FOUND", "resource not found")
+		default:
+			response.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", err.Error())
+		}
+		return
+	}
+
+	prMergeResponse := MergePRResponse{
+		PullRequest: PullRequestResponse{
+			PullRequestID:     prMergeInfo.PullRequestID,
+			PullRequestName:   prMergeInfo.PullRequestName,
+			AuthorID:          prMergeInfo.AuthorID,
+			Status:            string(prMergeInfo.Status),
+			AssignedReviewers: prMergeInfo.AssignedReviewers,
+			MergedAt:          prMergeInfo.MergedAt,
+		},
+	}
+
+	response.JSON(w, http.StatusOK, prMergeResponse)
+}

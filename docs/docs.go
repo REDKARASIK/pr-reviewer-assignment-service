@@ -72,6 +72,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/pullRequest/merge": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PullRequests"
+                ],
+                "summary": "Пометить PR как MERGED (идемпотентная операция)",
+                "parameters": [
+                    {
+                        "description": "Идентификатор PR для merge",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pull_requests.MergePRRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PR успешно помечен как MERGED",
+                        "schema": {
+                            "$ref": "#/definitions/pull_requests.MergePRResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "INVALID_JSON",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "NOT_FOUND",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/team/add": {
             "post": {
                 "consumes": [
@@ -280,6 +331,22 @@ const docTemplate = `{
             }
         },
         "pull_requests.CreatePRResponse": {
+            "type": "object",
+            "properties": {
+                "pr": {
+                    "$ref": "#/definitions/pull_requests.PullRequestResponse"
+                }
+            }
+        },
+        "pull_requests.MergePRRequest": {
+            "type": "object",
+            "properties": {
+                "pull_request_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "pull_requests.MergePRResponse": {
             "type": "object",
             "properties": {
                 "pr": {
