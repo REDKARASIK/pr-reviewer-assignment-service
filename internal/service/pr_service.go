@@ -18,8 +18,8 @@ type PullRequestService struct {
 	teamRepo TeamRepository
 }
 
-func NewPullRequestService(repo PullRequestRepository, userRepo UserRepository) *PullRequestService {
-	return &PullRequestService{repo: repo, userRepo: userRepo}
+func NewPullRequestService(repo PullRequestRepository, userRepo UserRepository, teamRepo TeamRepository) *PullRequestService {
+	return &PullRequestService{repo: repo, userRepo: userRepo, teamRepo: teamRepo}
 }
 
 func (service *PullRequestService) GetReview(ctx context.Context, id string) ([]domain.PullRequest, error) {

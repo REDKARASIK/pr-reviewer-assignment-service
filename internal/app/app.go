@@ -34,7 +34,7 @@ func NewApp(ctx context.Context, dsn string) (*App, error) {
 
 	// service
 	userServ := service.NewUserService(userRepo)
-	prServ := service.NewPullRequestService(prRepo, userRepo)
+	prServ := service.NewPullRequestService(prRepo, userRepo, teamRepo)
 	teamServ := service.NewTeamService(teamRepo, userRepo)
 
 	// handlers
