@@ -37,8 +37,22 @@ definitions:
         type: string
       pull_request_name:
         type: string
+      replaced_by:
+        type: string
       status:
         type: string
+    type: object
+  pull_requests.ReassignPRRequest:
+    properties:
+      old_reviewer_id:
+        type: string
+      pull_request_id:
+        type: string
+    type: object
+  pull_requests.ReassignPRResponse:
+    properties:
+      pr:
+        $ref: '#/definitions/pull_requests.PullRequestResponse'
     type: object
   response.ErrBodyResponse:
     properties:
@@ -198,6 +212,43 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorResponse'
       summary: Пометить PR как MERGED (идемпотентная операция)
+      tags:
+      - PullRequests
+  /pullRequest/reassign:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: PR и старый ревьювер
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/pull_requests.ReassignPRRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное переназначение ревьювера
+          schema:
+            $ref: '#/definitions/pull_requests.ReassignPRResponse'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: PR_MERGED / NO_CANDIDATE / NOT_ASSIGNED
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Переназначить ревьювера на другого из его команды
       tags:
       - PullRequests
   /team/add:

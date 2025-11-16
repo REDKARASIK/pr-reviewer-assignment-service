@@ -15,6 +15,7 @@ type PullRequestResponse struct {
 	Status            string     `json:"status"`
 	AssignedReviewers []string   `json:"assigned_reviewers"`
 	MergedAt          *time.Time `json:"mergedAt,omitempty"`
+	ReplacedBy        *string    `json:"replaced_by,omitempty"`
 }
 
 type CreatePRResponse struct {
@@ -26,5 +27,14 @@ type MergePRRequest struct {
 }
 
 type MergePRResponse struct {
+	PullRequest PullRequestResponse `json:"pr"`
+}
+
+type ReassignPRRequest struct {
+	PullRequestID string `json:"pull_request_id"`
+	OldReviewerID string `json:"old_reviewer_id"`
+}
+
+type ReassignPRResponse struct {
 	PullRequest PullRequestResponse `json:"pr"`
 }

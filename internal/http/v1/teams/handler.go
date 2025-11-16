@@ -62,11 +62,11 @@ func (handler *TeamsHandler) Add(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, domain.ErrTeamAlreadyExists):
 			response.Error(w, http.StatusBadRequest, "TEAM_EXISTS", err.Error())
 		case errors.Is(err, domain.ErrTeamNotFound):
-			response.Error(w, http.StatusBadRequest, "NOT_FOUND", err.Error())
-		case errors.Is(err, domain.ErrUserNotFound):
-			response.Error(w, http.StatusBadRequest, "NOT_FOUND", err.Error())
-		case errors.Is(err, domain.ErrUserNotFoundInTeam):
 			response.Error(w, http.StatusNotFound, "NOT_FOUND", err.Error())
+		case errors.Is(err, domain.ErrUserNotFound):
+			response.Error(w, http.StatusNotFound, "NOT_FOUND", err.Error())
+		case errors.Is(err, domain.ErrUserAlreadyInTeam):
+			response.Error(w, http.StatusConflict, "TEAMS_CONFLICT", err.Error())
 		default:
 			response.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", "internal server error")
 		}

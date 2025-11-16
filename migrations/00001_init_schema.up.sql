@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS users.team_members (
     user_id VARCHAR(255) NOT NULL
         REFERENCES users.users(id) ON DELETE CASCADE,
     joined_at timestamptz NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (team_id, user_id)
+    PRIMARY KEY (team_id, user_id),
+    CONSTRAINT team_members_user_one_team UNIQUE (user_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_team_members_user_id

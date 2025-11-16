@@ -40,7 +40,7 @@ func (service *TeamService) Add(ctx context.Context, team domain.Team) (*domain.
 		}
 
 		if isTeamExists && user.TeamName != nil && *user.TeamName != team.TeamName {
-			return nil, domain.ErrUserNotFoundInTeam
+			return nil, domain.ErrUserAlreadyInTeam
 		}
 
 		if isTeamExists {

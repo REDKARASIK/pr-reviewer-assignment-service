@@ -203,3 +203,98 @@ func (repo *PullRequestRepository) Merge(ctx context.Context, prID string) (*dom
 		MergedAt:          mergedAt,
 	}, nil
 }
+
+func (repo *PullRequestRepository) IsExists(ctx context.Context, prID string) (bool, error) {
+	const qExistsPR = `SELECT EXISTS (
+SELECT 1
+FROM prs.pull_requests
+WHERE id = $1
+);`
+	var exists bool
+	err := repo.pool.QueryRow(ctx, qExistsPR, prID).Scan(&exists)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return exists, nil
+		}
+		return false, err
+	}
+	return exists, nil
+}
+
+func (repo *PullRequestRepository) GetPRReviewers(ctx context.Context, prID string) ([]string, error) {
+	const qPRReviews = `
+		SELECT user_id
+		FROM prs.pr_reviewers
+		WHERE pr_id = $1
+	`
+
+	rows, err := repo.pool.Query(ctx, qPRReviews, prID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var reviewers []string
+	for rows.Next() {
+		var rid string
+		if err := rows.Scan(&rid); err != nil {
+			return nil, err
+		}
+		reviewers = append(reviewers, rid)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+	return reviewers, nil
+}
+
+func (repo *PullRequestRepository) GetPRAuthors(ctx context.Context, prID string) (string, error) {
+	const qGetPRAuthor = `
+		SELECT author_id
+		FROM prs.pull_requests
+		WHERE id = $1
+	`
+
+	var authorID string
+	err := repo.pool.QueryRow(ctx, qGetPRAuthor, prID).Scan(&authorID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return authorID, domain.ErrPRNotFound
+		}
+		return authorID, err
+	}
+	return authorID, nil
+}
+
+func (repo *PullRequestRepository) GetPRNameByID(ctx context.Context, prID string) (string, error) {
+	const qPRName = `SELECT title FROM prs.pull_requests WHERE id = $1`
+	var name string
+	err := repo.pool.QueryRow(ctx, qPRName, prID).Scan(&name)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return name, domain.ErrPRNotFound
+		}
+		return name, err
+	}
+	return name, nil
+}
+
+func (repo *PullRequestRepository) DeleteAssignedUser(ctx context.Context, prID string) error {
+	tx, err := repo.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback(ctx)
+		} else if err != nil {
+			_ = tx.Rollback(ctx)
+		}
+		err = tx.Commit(ctx)
+	}()
+
+	_, err = tx.Exec(ctx, `DELETE FROM prs.pr_reviewers WHERE pr_id = $1`, prID)
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -34,6 +34,7 @@ func RegisterRoutes(h RoutesHandlers) http.Handler {
 	prGroup := r.Group("/pullRequest")
 	prGroup.POST("/create", h.PrHandler.Create)
 	prGroup.POST("/merge", h.PrHandler.Merge)
+	prGroup.POST("/reassign", h.PrHandler.Reassign)
 
 	// swagger
 	r.GET("/swagger", httpSwagger.WrapHandler)

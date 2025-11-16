@@ -145,7 +145,7 @@ func (repo *TeamRepository) UpdateTeamMembers(ctx context.Context, team *domain.
 	for _, m := range team.Members {
 		if _, ok := existing[m.UserID]; !ok {
 			if _, err = tx.Exec(ctx, qInsertMember, teamID, m.UserID); err != nil {
-				return err
+				return domain.ErrUserAlreadyInTeam
 			}
 		}
 	}
@@ -242,7 +242,7 @@ func (repo *TeamRepository) GetTeamsMembersByTeamName(ctx context.Context, teamN
             ) AS pr_reviews
         FROM users.team_members tm
         JOIN users.users u ON u.id = tm.user_id
-        WHERE tm.team_id = $1
+        WHERE tm.team_id = $1 AND u.is_active = true
         ORDER BY u.name;
     `
 

@@ -125,3 +125,63 @@ func (handler *PullRequestHandler) Merge(w http.ResponseWriter, r *http.Request)
 
 	response.JSON(w, http.StatusOK, prMergeResponse)
 }
+
+// Reassign godoc
+// @Summary Переназначить ревьювера на другого из его команды
+// @Description
+//
+//	Заменяет конкретного ревьювера в PR на другого участника той же команды.
+//	Новый ревьювер выбирается из активных участников команды с минимальным числом назначенных ревью.
+//	Автор PR никогда не попадает в список ревьюверов.
+//	Если нет доступного кандидата — возвращается ошибка NO_CANDIDATE.
+//
+// @Tags PullRequests
+// @Accept json
+// @Produce json
+// @Param request body ReassignPRRequest true "PR и старый ревьювер"
+// @Success 200 {object} ReassignPRResponse "Успешное переназначение ревьювера"
+// @Failure 400 {object} response.ErrorResponse "INVALID_JSON"
+// @Failure 404 {object} response.ErrorResponse "NOT_FOUND"
+// @Failure 409 {object} response.ErrorResponse "PR_MERGED / NO_CANDIDATE / NOT_ASSIGNED"
+// @Failure 500 {object} response.ErrorResponse "INTERNAL_ERROR"
+// @Router /pullRequest/reassign [post]
+func (handler *PullRequestHandler) Reassign(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	w.Header().Set("Content-Type", "application/json")
+
+	var request ReassignPRRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		response.Error(w, http.StatusBadRequest, "INVALID_JSON", "invalid request body")
+		return
+	}
+
+	prAssgs, err := handler.prService.Reassign(r.Context(), request.PullRequestID, request.OldReviewerID)
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, domain.ErrPRNotFound):
+			response.Error(w, http.StatusNotFound, "NOT_FOUND", "resource not found")
+		case errors.Is(err, domain.ErrPRMerged):
+			response.Error(w, http.StatusConflict, "PR_MERGED", err.Error())
+		case errors.Is(err, domain.ErrIsNotAssigned):
+			response.Error(w, http.StatusConflict, "NOT_ASSIGNED", err.Error())
+		case errors.Is(err, domain.ErrIsNoCandidates):
+			response.Error(w, http.StatusConflict, "NO_CANDIDATE", err.Error())
+		default:
+			response.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", err.Error())
+		}
+		return
+	}
+
+	prAssgsResponse := ReassignPRResponse{
+		PullRequest: PullRequestResponse{
+			PullRequestID:     prAssgs.PullRequestID,
+			PullRequestName:   prAssgs.PullRequestName,
+			AuthorID:          prAssgs.AuthorID,
+			Status:            string(prAssgs.Status),
+			AssignedReviewers: prAssgs.AssignedReviewers,
+			ReplacedBy:        prAssgs.ReplacedBy,
+		},
+	}
+
+	response.JSON(w, http.StatusOK, prAssgsResponse)
+}

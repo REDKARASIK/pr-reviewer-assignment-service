@@ -123,6 +123,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/pullRequest/reassign": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PullRequests"
+                ],
+                "summary": "Переназначить ревьювера на другого из его команды",
+                "parameters": [
+                    {
+                        "description": "PR и старый ревьювер",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pull_requests.ReassignPRRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное переназначение ревьювера",
+                        "schema": {
+                            "$ref": "#/definitions/pull_requests.ReassignPRResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "INVALID_JSON",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "NOT_FOUND",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "PR_MERGED / NO_CANDIDATE / NOT_ASSIGNED",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/team/add": {
             "post": {
                 "consumes": [
@@ -375,8 +432,30 @@ const docTemplate = `{
                 "pull_request_name": {
                     "type": "string"
                 },
+                "replaced_by": {
+                    "type": "string"
+                },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "pull_requests.ReassignPRRequest": {
+            "type": "object",
+            "properties": {
+                "old_reviewer_id": {
+                    "type": "string"
+                },
+                "pull_request_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "pull_requests.ReassignPRResponse": {
+            "type": "object",
+            "properties": {
+                "pr": {
+                    "$ref": "#/definitions/pull_requests.PullRequestResponse"
                 }
             }
         },

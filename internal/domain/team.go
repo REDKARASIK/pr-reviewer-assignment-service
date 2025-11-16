@@ -4,7 +4,7 @@ import "errors"
 
 var ErrTeamNotFound = errors.New("team not found")
 var ErrTeamAlreadyExists = errors.New("team_name already exists")
-var ErrUserNotFoundInTeam = errors.New("user not found in team")
+var ErrUserAlreadyInTeam = errors.New("user already in team")
 
 type Member struct {
 	UserID    string
