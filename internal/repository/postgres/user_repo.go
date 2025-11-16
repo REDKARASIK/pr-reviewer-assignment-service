@@ -25,8 +25,8 @@ func (repo *UserRepository) GetByID(ctx context.Context, id string) (*domain.Use
 			u.is_active,
 			t.name as team_name
 		FROM users.users u
-		JOIN users.team_members tm ON tm.user_id = u.id
-		JOIN users.teams t ON t.id = tm.team_id 
+		LEFT JOIN users.team_members tm ON tm.user_id = u.id
+		LEFT JOIN users.teams t ON t.id = tm.team_id 
 		WHERE u.id = $1
 		LIMIT 1
 	`

@@ -7,6 +7,6 @@ var ErrUserNotFound = errors.New("user not found")
 type User struct {
 	ID       string
 	Username string
-	TeamName string
+	TeamName *string
 	IsActive bool
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"pr-reviewer-assigment-service/internal/http/router"
+	"pr-reviewer-assigment-service/internal/http/v1/teams"
 	"pr-reviewer-assigment-service/internal/http/v1/users"
 	"pr-reviewer-assigment-service/internal/repository/postgres"
 	"pr-reviewer-assigment-service/internal/service"
@@ -15,6 +16,7 @@ type App struct {
 	db          *pgxpool.Pool
 	Router      *router.Router
 	UserHandler *users.UsersHandler
+	TeamHandler *teams.TeamsHandler
 }
 
 func NewApp(ctx context.Context, dsn string) (*App, error) {
@@ -26,17 +28,21 @@ func NewApp(ctx context.Context, dsn string) (*App, error) {
 	// repo
 	userRepo := postgres.NewUserRepository(pool)
 	prRepo := postgres.NewPullRequestRepository(pool)
+	teamRepo := postgres.NewTeamRepository(pool)
 
 	// service
 	userServ := service.NewUserService(userRepo)
 	prServ := service.NewPullRequestService(prRepo)
+	teamServ := service.NewTeamService(teamRepo, userRepo)
 
 	// handlers
 	userHandler := users.NewUsersHandler(userServ, prServ)
+	teamHandler := teams.NewTeamsHandler(teamServ)
 
 	app := &App{
 		db:          pool,
 		UserHandler: userHandler,
+		TeamHandler: teamHandler,
 	}
 
 	app.Router = router.NewRouter()
