@@ -5,6 +5,8 @@ import (
 	"pr-reviewer-assigment-service/internal/http/router"
 	"pr-reviewer-assigment-service/internal/http/v1/teams"
 	"pr-reviewer-assigment-service/internal/http/v1/users"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type RoutesHandlers struct {
@@ -24,6 +26,13 @@ func RegisterRoutes(h RoutesHandlers) http.Handler {
 	// teams
 	teamsGroup := r.Group("/team")
 	teamsGroup.POST("/add", h.TeamHandler.Add)
+	teamsGroup.GET("/get", h.TeamHandler.Get)
+
+	// swagger
+	r.GET("/swagger", httpSwagger.WrapHandler)
+	r.GET("/swagger/", httpSwagger.WrapHandler)
+	r.GET("/swagger/index.html", httpSwagger.WrapHandler)
+	r.GET("/swagger/doc.json", httpSwagger.WrapHandler)
 
 	return r.Handler()
 }

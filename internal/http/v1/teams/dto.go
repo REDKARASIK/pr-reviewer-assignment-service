@@ -12,6 +12,10 @@ type TeamAddRequest struct {
 }
 
 type TeamAddResponse struct {
+	Team TeamResponse `json:"team"`
+}
+
+type TeamResponse struct {
 	TeamName string   `json:"team_name"`
 	Members  []Member `json:"members"`
 }

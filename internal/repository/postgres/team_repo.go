@@ -164,3 +164,52 @@ func (repo *TeamRepository) UpdateTeamMembers(ctx context.Context, team *domain.
 
 	return nil
 }
+
+func (repo *TeamRepository) GetTeam(ctx context.Context, teamName string) (*domain.Team, error) {
+	const qSelectTeam = `
+		SELECT id
+		FROM users.teams
+		WHERE name = $1
+	`
+
+	var teamID int64
+	err := repo.pool.QueryRow(ctx, qSelectTeam, teamName).Scan(&teamID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrTeamNotFound
+		}
+		return nil, err
+	}
+
+	const qSelectMembers = `
+		SELECT u.id, u.name, u.is_active
+		FROM users.team_members tm
+		JOIN users.users u ON u.id = tm.user_id
+		WHERE tm.team_id = $1
+		ORDER BY u.name
+	`
+
+	rows, err := repo.pool.Query(ctx, qSelectMembers, teamID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var members []domain.Member
+	for rows.Next() {
+		var m domain.Member
+		if err := rows.Scan(&m.UserID, &m.Username, &m.IsActive); err != nil {
+			return nil, err
+		}
+		members = append(members, m)
+	}
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return &domain.Team{
+		TeamName: teamName,
+		Members:  members,
+	}, nil
+}

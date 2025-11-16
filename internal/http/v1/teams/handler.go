@@ -17,6 +17,22 @@ func NewTeamsHandler(teamService *service.TeamService) *TeamsHandler {
 	return &TeamsHandler{teamService: teamService}
 }
 
+// Add godoc
+// @Summary Создать команду с участниками (создаёт/обновляет пользователей)
+// @Description
+//   - Если команды ещё нет — создаётся команда и все участники добавляются в team_members.
+//   - Если команда уже есть — обновляются участники (добавляются/удаляются) и флаг is_active у пользователей.
+//   - Если пользователь уже состоит в другой команде — вернётся ошибка.
+//
+// @Tags Teams
+// @Accept json
+// @Produce json
+// @Param request body TeamAddRequest true "Команда и её участники"
+// @Success 201 {object} TeamAddResponse "Созданная/обновлённая команда"
+// @Failure 400 {object} response.ErrorResponse "INVALID_JSON / TEAM_EXISTS / NOT_FOUND"
+// @Failure 404 {object} response.ErrorResponse "NOT_FOUND / USER_NOT_FOUND_IN_TEAM"
+// @Failure 500 {object} response.ErrorResponse "INTERNAL_ERROR"
+// @Router /team/add [post]
 func (handler *TeamsHandler) Add(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -58,9 +74,9 @@ func (handler *TeamsHandler) Add(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var teamResponse TeamAddResponse
-	teamResponse.TeamName = team.TeamName
+	teamResponse.Team.TeamName = team.TeamName
 	for _, member := range team.Members {
-		teamResponse.Members = append(teamResponse.Members, Member{
+		teamResponse.Team.Members = append(teamResponse.Team.Members, Member{
 			Username: member.Username,
 			UserID:   member.UserID,
 			IsActive: member.IsActive,
@@ -70,9 +86,50 @@ func (handler *TeamsHandler) Add(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusCreated, teamResponse)
 }
 
+// Get godoc
+// @Summary Получить команду с участниками
+// @Description Возвращает состав команды по её имени.
+// @Tags Teams
+// @Accept json
+// @Produce json
+// @Param team_name query string true "Уникальное имя команды"
+// @Success 200 {object} TeamResponse "Команда и её участники"
+// @Failure 404 {object} response.ErrorResponse "NOT_FOUND / TEAM_NOT_FOUND"
+// @Failure 500 {object} response.ErrorResponse "INTERNAL_ERROR"
+// @Router /team/get [get]
 func (handler *TeamsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	w.Header().Set("Content-Type", "application/json")
 
+	queryParams := r.URL.Query()
+	teamName := queryParams.Get("team_name")
+	if teamName == "" {
+		response.Error(w, http.StatusBadRequest, "MISSING_FIELD", "team_name field is required")
+		return
+	}
+
+	teamDomain, err := handler.teamService.GetTeam(r.Context(), teamName)
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrTeamNotFound):
+			response.Error(w, http.StatusNotFound, "NOT_FOUND", "team not found")
+		default:
+			response.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", "internal server error")
+		}
+		return
+	}
+
+	var teamResponse TeamResponse
+	teamResponse.TeamName = teamName
+
+	for _, member := range teamDomain.Members {
+		teamResponse.Members = append(teamResponse.Members, Member{
+			Username: member.Username,
+			UserID:   member.UserID,
+			IsActive: member.IsActive,
+		})
+	}
+
+	response.JSON(w, http.StatusOK, teamResponse)
 }

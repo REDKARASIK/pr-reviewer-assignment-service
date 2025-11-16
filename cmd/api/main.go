@@ -5,12 +5,14 @@ import (
 	"log"
 	http2 "net/http"
 	"os"
+	"pr-reviewer-assigment-service/docs"
 	app2 "pr-reviewer-assigment-service/internal/app"
 	"pr-reviewer-assigment-service/internal/http"
 	"time"
 )
 
 func main() {
+	docs.SwaggerInfo.BasePath = "/"
 	dsn := os.Getenv("DB_DSN")
 	if dsn == "" {
 		log.Fatal("DB_DSN environment variable not set")

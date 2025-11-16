@@ -9,6 +9,7 @@ type TeamRepository interface {
 	CreateTeam(ctx context.Context, team *domain.Team) error
 	IsTeamExists(ctx context.Context, teamName string) (bool, error)
 	UpdateTeamMembers(ctx context.Context, team *domain.Team) error
+	GetTeam(ctx context.Context, teamName string) (*domain.Team, error)
 }
 
 type TeamService struct {
@@ -75,4 +76,21 @@ func (service *TeamService) Add(ctx context.Context, team domain.Team) (*domain.
 	}
 
 	return &team, nil
+}
+
+func (service *TeamService) GetTeam(ctx context.Context, teamName string) (*domain.Team, error) {
+	isTeamExists, err := service.teamRepo.IsTeamExists(ctx, teamName)
+	if err != nil {
+		return nil, err
+	}
+	if !isTeamExists {
+		return nil, domain.ErrTeamNotFound
+	}
+
+	team, err := service.teamRepo.GetTeam(ctx, teamName)
+	if err != nil {
+		return nil, err
+	}
+
+	return team, nil
 }

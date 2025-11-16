@@ -11,6 +11,38 @@ definitions:
       error:
         $ref: '#/definitions/response.ErrBodyResponse'
     type: object
+  teams.Member:
+    properties:
+      is_active:
+        type: boolean
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  teams.TeamAddRequest:
+    properties:
+      members:
+        items:
+          $ref: '#/definitions/teams.Member'
+        type: array
+      team_name:
+        type: string
+    type: object
+  teams.TeamAddResponse:
+    properties:
+      team:
+        $ref: '#/definitions/teams.TeamResponse'
+    type: object
+  teams.TeamResponse:
+    properties:
+      members:
+        items:
+          $ref: '#/definitions/teams.Member'
+        type: array
+      team_name:
+        type: string
+    type: object
   users.GetReviewResponse:
     properties:
       pull_requests:
@@ -57,6 +89,68 @@ definitions:
 info:
   contact: {}
 paths:
+  /team/add:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Команда и её участники
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/teams.TeamAddRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Созданная/обновлённая команда
+          schema:
+            $ref: '#/definitions/teams.TeamAddResponse'
+        "400":
+          description: INVALID_JSON / TEAM_EXISTS / NOT_FOUND
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: NOT_FOUND / USER_NOT_FOUND_IN_TEAM
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Создать команду с участниками (создаёт/обновляет пользователей)
+      tags:
+      - Teams
+  /team/get:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает состав команды по её имени.
+      parameters:
+      - description: Уникальное имя команды
+        in: query
+        name: team_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Команда и её участники
+          schema:
+            $ref: '#/definitions/teams.TeamResponse'
+        "404":
+          description: NOT_FOUND / TEAM_NOT_FOUND
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: INTERNAL_ERROR
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Получить команду с участниками
+      tags:
+      - Teams
   /users/getReview:
     get:
       consumes:

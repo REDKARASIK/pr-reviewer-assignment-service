@@ -15,6 +15,101 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/team/add": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Создать команду с участниками (создаёт/обновляет пользователей)",
+                "parameters": [
+                    {
+                        "description": "Команда и её участники",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/teams.TeamAddRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Созданная/обновлённая команда",
+                        "schema": {
+                            "$ref": "#/definitions/teams.TeamAddResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "INVALID_JSON / TEAM_EXISTS / NOT_FOUND",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "NOT_FOUND / USER_NOT_FOUND_IN_TEAM",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/team/get": {
+            "get": {
+                "description": "Возвращает состав команды по её имени.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Получить команду с участниками",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Уникальное имя команды",
+                        "name": "team_name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Команда и её участники",
+                        "schema": {
+                            "$ref": "#/definitions/teams.TeamResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "NOT_FOUND / TEAM_NOT_FOUND",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL_ERROR",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/getReview": {
             "get": {
                 "description": "Возвращает список PR'ов, в которых user_id указан как ревьювер",
@@ -129,6 +224,56 @@ const docTemplate = `{
             "properties": {
                 "error": {
                     "$ref": "#/definitions/response.ErrBodyResponse"
+                }
+            }
+        },
+        "teams.Member": {
+            "type": "object",
+            "properties": {
+                "is_active": {
+                    "type": "boolean"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "teams.TeamAddRequest": {
+            "type": "object",
+            "properties": {
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/teams.Member"
+                    }
+                },
+                "team_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "teams.TeamAddResponse": {
+            "type": "object",
+            "properties": {
+                "team": {
+                    "$ref": "#/definitions/teams.TeamResponse"
+                }
+            }
+        },
+        "teams.TeamResponse": {
+            "type": "object",
+            "properties": {
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/teams.Member"
+                    }
+                },
+                "team_name": {
+                    "type": "string"
                 }
             }
         },
