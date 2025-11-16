@@ -26,7 +26,8 @@ func main() {
 	defer app.Close()
 
 	server := http.RegisterRoutes(http.RoutesHandlers{
-		Router: app.Router,
+		Router:      app.Router,
+		UserHandler: app.UserHandler,
 	})
 
 	log.Println("Starting server on :8080")
