@@ -1,7 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS users;
 
 CREATE TABLE IF NOT EXISTS users.users (
-    id BIGSERIAL PRIMARY KEY,
+    id VARCHAR(255) PRIMARY KEY,
     name varchar(125) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at timestamptz NOT NULL DEFAULT NOW()
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS users.teams (
 CREATE TABLE IF NOT EXISTS users.team_members (
     team_id BIGINT NOT NULL
         REFERENCES users.teams(id) ON DELETE CASCADE,
-    user_id BIGINT NOT NULL
+    user_id VARCHAR(255) NOT NULL
         REFERENCES users.users(id) ON DELETE CASCADE,
     joined_at timestamptz NOT NULL DEFAULT NOW(),
     PRIMARY KEY (team_id, user_id)

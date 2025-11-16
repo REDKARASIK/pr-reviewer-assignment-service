@@ -1,9 +1,36 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"log"
+	http2 "net/http"
+	"os"
+	app2 "pr-reviewer-assigment-service/internal/app"
+	"pr-reviewer-assigment-service/internal/http"
+	"time"
+)
 
 func main() {
-	for {
-		fmt.Println("Hello World")
+	dsn := os.Getenv("DB_DSN")
+	if dsn == "" {
+		log.Fatal("DB_DSN environment variable not set")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*3)
+	defer cancel()
+
+	app, err := app2.NewApp(ctx, dsn)
+	if err != nil {
+		log.Fatalf("failed to init app: %v", err)
+	}
+	defer app.Close()
+
+	server := http.RegisterRoutes(http.RoutesHandlers{
+		Router: app.Router,
+	})
+
+	log.Println("Starting server on :8080")
+	if err := http2.ListenAndServe(":8080", server); err != nil {
+		log.Fatalf("failed to start server: %v", err)
 	}
 }
