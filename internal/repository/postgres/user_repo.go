@@ -62,3 +62,24 @@ func (repo *UserRepository) UpdateActive(ctx context.Context, user *domain.User)
 
 	return nil
 }
+
+func (repo *UserRepository) Create(ctx context.Context, userID, name string, isActive *bool) (*domain.User, error) {
+	const q = `
+		INSERT INTO users.users (id, name, is_active)
+		VALUES ($1, $2, $3)
+		RETURNING id, name, is_active
+	`
+
+	var u domain.User
+
+	err := repo.pool.QueryRow(ctx, q, userID, name, isActive).Scan(
+		&u.ID,
+		&u.Username,
+		&u.IsActive,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
+}

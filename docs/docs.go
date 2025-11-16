@@ -211,13 +211,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "INVALID_JSON / TEAM_EXISTS / NOT_FOUND",
+                        "description": "INVALID_JSON",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "404": {
-                        "description": "NOT_FOUND / USER_NOT_FOUND_IN_TEAM",
+                        "description": "NOT_FOUND",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "USERS_TEAM_EXISTS",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }

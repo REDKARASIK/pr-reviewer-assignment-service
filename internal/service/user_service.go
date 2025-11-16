@@ -8,6 +8,7 @@ import (
 type UserRepository interface {
 	GetByID(ctx context.Context, id string) (*domain.User, error)
 	UpdateActive(ctx context.Context, user *domain.User) error
+	Create(ctx context.Context, userID, name string, isActive *bool) (*domain.User, error)
 }
 
 type UserService struct {

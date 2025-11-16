@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"pr-reviewer-assigment-service/internal/domain"
 )
 
@@ -36,7 +37,13 @@ func (service *TeamService) Add(ctx context.Context, team domain.Team) (*domain.
 	for _, member := range team.Members {
 		user, err := service.userRepo.GetByID(ctx, member.UserID)
 		if err != nil {
-			return nil, err
+			if !errors.Is(err, domain.ErrUserNotFound) {
+				return nil, err
+			}
+			user, err = service.userRepo.Create(ctx, member.UserID, member.Username, &member.IsActive)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		if isTeamExists && user.TeamName != nil && *user.TeamName != team.TeamName {

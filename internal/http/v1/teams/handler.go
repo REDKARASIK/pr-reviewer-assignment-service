@@ -29,8 +29,9 @@ func NewTeamsHandler(teamService *service.TeamService) *TeamsHandler {
 // @Produce json
 // @Param request body TeamAddRequest true "Команда и её участники"
 // @Success 201 {object} TeamAddResponse "Созданная/обновлённая команда"
-// @Failure 400 {object} response.ErrorResponse "INVALID_JSON / TEAM_EXISTS / NOT_FOUND"
-// @Failure 404 {object} response.ErrorResponse "NOT_FOUND / USER_NOT_FOUND_IN_TEAM"
+// @Failure 400 {object} response.ErrorResponse "INVALID_JSON"
+// @Failure 404 {object} response.ErrorResponse "NOT_FOUND"
+// @Failure 409 {object} response.ErrorResponse "USERS_TEAM_EXISTS"
 // @Failure 500 {object} response.ErrorResponse "INTERNAL_ERROR"
 // @Router /team/add [post]
 func (handler *TeamsHandler) Add(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +61,7 @@ func (handler *TeamsHandler) Add(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrTeamAlreadyExists):
-			response.Error(w, http.StatusBadRequest, "TEAM_EXISTS", err.Error())
+			response.Error(w, http.StatusBadRequest, "USERS_TEAM_EXISTS", err.Error())
 		case errors.Is(err, domain.ErrTeamNotFound):
 			response.Error(w, http.StatusNotFound, "NOT_FOUND", err.Error())
 		case errors.Is(err, domain.ErrUserNotFound):
