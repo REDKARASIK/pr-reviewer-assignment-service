@@ -21,8 +21,8 @@ func NewUserService(repo UserRepository) *UserService {
 	}
 }
 
-func (service *UserService) SetIsActive(ctx context.Context, userId string, isActive bool) (*domain.User, error) {
-	user, err := service.repo.GetByID(ctx, userId)
+func (service *UserService) SetIsActive(ctx context.Context, userID string, isActive bool) (*domain.User, error) {
+	user, err := service.repo.GetByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

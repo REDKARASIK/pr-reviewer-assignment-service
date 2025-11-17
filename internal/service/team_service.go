@@ -32,8 +32,6 @@ func (service *TeamService) Add(ctx context.Context, team domain.Team) (*domain.
 		return nil, err
 	}
 
-	var users []domain.User
-
 	for _, member := range team.Members {
 		user, err := service.userRepo.GetByID(ctx, member.UserID)
 		if err != nil {
@@ -56,8 +54,6 @@ func (service *TeamService) Add(ctx context.Context, team domain.Team) (*domain.
 				return nil, err
 			}
 		}
-
-		users = append(users, *user)
 	}
 
 	if isTeamExists {

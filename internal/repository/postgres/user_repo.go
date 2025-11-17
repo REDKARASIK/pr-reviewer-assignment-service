@@ -9,16 +9,19 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// UserRepository - модель, которая работает с user из базы данных
 type UserRepository struct {
 	pool *pgxpool.Pool
 }
 
+// NewUserRepository - создает новый репозиторий юзера
 func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
 	return &UserRepository{pool: pool}
 }
 
+// GetByID - возвращает юзера и его информацию по ID
 func (repo *UserRepository) GetByID(ctx context.Context, id string) (*domain.User, error) {
-	const qGetUserById = `
+	const qGetUserByID = `
 		SELECT 
 			u.id as user_id,
 			u.name as username,
@@ -33,7 +36,7 @@ func (repo *UserRepository) GetByID(ctx context.Context, id string) (*domain.Use
 
 	user := &domain.User{}
 
-	err := repo.pool.QueryRow(ctx, qGetUserById, id).Scan(&user.ID, &user.Username, &user.IsActive, &user.TeamName)
+	err := repo.pool.QueryRow(ctx, qGetUserByID, id).Scan(&user.ID, &user.Username, &user.IsActive, &user.TeamName)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, domain.ErrUserNotFound
@@ -44,6 +47,7 @@ func (repo *UserRepository) GetByID(ctx context.Context, id string) (*domain.Use
 	return user, nil
 }
 
+// UpdateActive обновляет активность у юзера
 func (repo *UserRepository) UpdateActive(ctx context.Context, user *domain.User) error {
 	const qUpdateActiveByID = `
 		UPDATE users.users
@@ -63,6 +67,7 @@ func (repo *UserRepository) UpdateActive(ctx context.Context, user *domain.User)
 	return nil
 }
 
+// Create создает юзера
 func (repo *UserRepository) Create(ctx context.Context, userID, name string, isActive *bool) (*domain.User, error) {
 	const q = `
 		INSERT INTO users.users (id, name, is_active)

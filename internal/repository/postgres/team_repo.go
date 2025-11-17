@@ -79,6 +79,7 @@ func (repo *TeamRepository) IsTeamExists(ctx context.Context, teamName string) (
 	return exists, nil
 }
 
+// UpdateTeamMembers - обновляет участников команды (UPSERT)
 func (repo *TeamRepository) UpdateTeamMembers(ctx context.Context, team *domain.Team) error {
 	tx, err := repo.pool.Begin(ctx)
 	if err != nil {
@@ -165,6 +166,7 @@ func (repo *TeamRepository) UpdateTeamMembers(ctx context.Context, team *domain.
 	return nil
 }
 
+// GetTeam возвращает полную информацию о команде и её участников
 func (repo *TeamRepository) GetTeam(ctx context.Context, teamName string) (*domain.Team, error) {
 	const qSelectTeam = `
 		SELECT id
@@ -214,6 +216,7 @@ func (repo *TeamRepository) GetTeam(ctx context.Context, teamName string) (*doma
 	}, nil
 }
 
+// GetTeamsMembersByTeamName - возвращает участников команды по её названию
 func (repo *TeamRepository) GetTeamsMembersByTeamName(ctx context.Context, teamName string) ([]domain.Member, error) {
 	const qSelectTeamID = `
         SELECT id
