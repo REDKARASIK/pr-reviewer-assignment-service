@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"pr-reviewer-assigment-service/internal/http/router"
 	"pr-reviewer-assigment-service/internal/http/v1/pull_requests"
+	"pr-reviewer-assigment-service/internal/http/v1/statistics"
 	"pr-reviewer-assigment-service/internal/http/v1/teams"
 	"pr-reviewer-assigment-service/internal/http/v1/users"
 
@@ -11,10 +12,11 @@ import (
 )
 
 type RoutesHandlers struct {
-	Router      *router.Router
-	UserHandler *users.UsersHandler
-	TeamHandler *teams.TeamsHandler
-	PrHandler   *pull_requests.PullRequestHandler
+	Router       *router.Router
+	UserHandler  *users.UsersHandler
+	TeamHandler  *teams.TeamsHandler
+	PrHandler    *pull_requests.PullRequestHandler
+	StatsHandler *statistics.StatisticsHandler
 }
 
 func RegisterRoutes(h RoutesHandlers) http.Handler {
@@ -35,6 +37,10 @@ func RegisterRoutes(h RoutesHandlers) http.Handler {
 	prGroup.POST("/create", h.PrHandler.Create)
 	prGroup.POST("/merge", h.PrHandler.Merge)
 	prGroup.POST("/reassign", h.PrHandler.Reassign)
+
+	// stats
+	statsGroup := r.Group("/stats")
+	statsGroup.GET("/users", h.StatsHandler.GetUserStats)
 
 	// swagger
 	r.GET("/swagger", httpSwagger.WrapHandler)

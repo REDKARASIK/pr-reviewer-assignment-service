@@ -66,6 +66,28 @@ definitions:
       error:
         $ref: '#/definitions/response.ErrBodyResponse'
     type: object
+  statistics.UserStatItemResponse:
+    properties:
+      assignments_count:
+        type: integer
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  statistics.UserStatsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/statistics.UserStatItemResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
   teams.Member:
     properties:
       is_active:
@@ -251,6 +273,35 @@ paths:
       summary: Переназначить ревьювера на другого из его команды
       tags:
       - PullRequests
+  /stats/users:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список пользователей и количество назначенных им PR
+        с пагинацией.
+      parameters:
+      - description: Лимит выборки (по умолчанию 50, максимум 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение выборки (по умолчанию 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/statistics.UserStatsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Статистика назначений по пользователям
+      tags:
+      - statistics
   /team/add:
     post:
       consumes:
