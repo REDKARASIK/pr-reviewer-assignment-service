@@ -38,6 +38,8 @@ services:
       DB_DSN: "postgres://avito_tester:avito_test_pass@db:5432/pr_reviews?sslmode=disable"
     ports:
       - "8080:8080"
+    volumes:
+      - ./config.toml:/app/config.toml
 
 volumes:
   pg_data:

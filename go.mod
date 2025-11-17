@@ -3,6 +3,7 @@ module pr-reviewer-assigment-service
 go 1.25.3
 
 require (
+	github.com/BurntSushi/toml v1.5.0
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.16.6
