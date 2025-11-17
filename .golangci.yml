@@ -1,0 +1,25 @@
+version: "2"
+
+run:
+  timeout: 3m
+  tests: true
+
+linters:
+  # явно управляем тем, что включено
+  default: none
+
+  enable:
+    - govet        # базовые проверки компилятора
+    - errcheck     # все ошибки должны обрабатываться
+    - staticcheck  # мощный анализатор (включает часть gosimple/unused-логики)
+    - revive       # стиль и простые замечания
+
+issues:
+  exclude-use-default: false
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+
+  revive:
+    ignore-generated-header: true

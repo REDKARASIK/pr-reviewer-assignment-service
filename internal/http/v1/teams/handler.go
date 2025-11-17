@@ -35,7 +35,9 @@ func NewTeamsHandler(teamService *service.TeamService) *TeamsHandler {
 // @Failure 500 {object} response.ErrorResponse "INTERNAL_ERROR"
 // @Router /team/add [post]
 func (handler *TeamsHandler) Add(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer func() {
+		_ = r.Body.Close()
+	}()
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -99,7 +101,9 @@ func (handler *TeamsHandler) Add(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} response.ErrorResponse "INTERNAL_ERROR"
 // @Router /team/get [get]
 func (handler *TeamsHandler) Get(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer func() {
+		_ = r.Body.Close()
+	}()
 
 	w.Header().Set("Content-Type", "application/json")
 

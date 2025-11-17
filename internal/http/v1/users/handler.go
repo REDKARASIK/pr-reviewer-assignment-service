@@ -34,7 +34,9 @@ func NewUsersHandler(userService *service.UserService, prService *service.PullRe
 // @Failure      500      {object}  response.ErrorResponse  "Внутренняя ошибка сервера"
 // @Router       /users/setIsActive [post]
 func (handler *UsersHandler) SetIsActive(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer func() {
+		_ = r.Body.Close()
+	}()
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -86,7 +88,9 @@ func (handler *UsersHandler) SetIsActive(w http.ResponseWriter, r *http.Request)
 // @Failure      500      {object}  response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /users/getReview [get]
 func (handler *UsersHandler) GetReview(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer func() {
+		_ = r.Body.Close()
+	}()
 
 	w.Header().Set("Content-Type", "application/json")
 

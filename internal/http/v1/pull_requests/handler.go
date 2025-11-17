@@ -35,7 +35,9 @@ func NewPullRequestHandler(prService *service.PullRequestService) *PullRequestHa
 // @Failure 500 {object} response.ErrorResponse "INTERNAL_ERROR"
 // @Router /pullRequest/create [post]
 func (handler *PullRequestHandler) Create(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer func() {
+		_ = r.Body.Close()
+	}()
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -92,7 +94,9 @@ func (handler *PullRequestHandler) Create(w http.ResponseWriter, r *http.Request
 // @Failure 500 {object} response.ErrorResponse "INTERNAL_ERROR"
 // @Router /pullRequest/merge [post]
 func (handler *PullRequestHandler) Merge(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer func() {
+		_ = r.Body.Close()
+	}()
 	w.Header().Set("Content-Type", "application/json")
 
 	var request MergePRRequest
@@ -146,7 +150,10 @@ func (handler *PullRequestHandler) Merge(w http.ResponseWriter, r *http.Request)
 // @Failure 500 {object} response.ErrorResponse "INTERNAL_ERROR"
 // @Router /pullRequest/reassign [post]
 func (handler *PullRequestHandler) Reassign(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer func() {
+		_ = r.Body.Close()
+	}()
+
 	w.Header().Set("Content-Type", "application/json")
 
 	var request ReassignPRRequest
