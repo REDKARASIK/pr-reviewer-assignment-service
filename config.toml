@@ -1,0 +1,11 @@
+[http]
+host = "0.0.0.0"
+port = 8080
+
+[postgres]
+host = "db"
+port = 5432
+user = "avito_tester"
+password = "avito_test_pass"
+database = "pr_reviews"
+sslmode = "disable"
